@@ -16,6 +16,5 @@ public class PredmetDTO {
     private String opis;
     private Integer espb;
     private boolean obavezan;
-    @NonNull
     private String studProgramNaziv;
 }

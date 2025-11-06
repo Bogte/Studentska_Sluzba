@@ -5,8 +5,11 @@ import org.raflab.studsluzba.controllers.response.StudentPodaciResponse;
 import org.raflab.studsluzba.model.Predmet;
 import org.raflab.studsluzba.model.StudentIndeks;
 import org.raflab.studsluzba.model.StudentPodaci;
+import org.raflab.studsluzba.model.StudijskiProgram;
 import org.raflab.studsluzba.model.dtos.PredmetDTO;
 import org.raflab.studsluzba.model.dtos.StudentDTO;
+import org.raflab.studsluzba.repositories.StudijskiProgramRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -36,12 +39,21 @@ public class EntityMappers {
         }
         return pd;
     }
-
     //Dodajem DTO listu
     public static List<PredmetDTO> toPredmetDTOList(Iterable<Predmet> predmetIterable) {
         List<PredmetDTO> dtos = new ArrayList<>();
         predmetIterable.forEach(predmet -> dtos.add(fromPredmetToDTO(predmet)));
         return dtos;
+    }
+    //Dodao predmet converter za DTO
+    public static Predmet fromDTOToPredmet(PredmetDTO predmetDTO) {
+        Predmet p = new Predmet();
+        p.setId(predmetDTO.getId());
+        p.setEspb(predmetDTO.getEspb());
+        p.setNaziv(predmetDTO.getNaziv());
+        p.setSifra(predmetDTO.getSifra());
+        p.setObavezan(predmetDTO.isObavezan());
+        return p;
     }
 	
 	public static StudentDTO fromStudentIndeksToDTO(StudentIndeks si) {
@@ -52,7 +64,6 @@ public class EntityMappers {
 		s.setStudProgramOznaka(si.getStudProgramOznaka());
 		s.setAktivanIndeks(si.isAktivan());
 		return s;
-		
 	}
 
     public StudentIndeksResponse fromStudentIndexToResponse(StudentIndeks si) {
