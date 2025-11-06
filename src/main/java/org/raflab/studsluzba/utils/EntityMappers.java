@@ -2,10 +2,15 @@ package org.raflab.studsluzba.utils;
 
 import org.raflab.studsluzba.controllers.response.StudentIndeksResponse;
 import org.raflab.studsluzba.controllers.response.StudentPodaciResponse;
+import org.raflab.studsluzba.model.Predmet;
 import org.raflab.studsluzba.model.StudentIndeks;
 import org.raflab.studsluzba.model.StudentPodaci;
+import org.raflab.studsluzba.model.dtos.PredmetDTO;
 import org.raflab.studsluzba.model.dtos.StudentDTO;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class EntityMappers {
@@ -16,8 +21,28 @@ public class EntityMappers {
 		s.setIme(sp.getIme());
 		s.setPrezime(sp.getPrezime());
 		return s;
-		
 	}
+
+    //Dodao DTO converter za Predmet
+    public static PredmetDTO fromPredmetToDTO(Predmet p) {
+        PredmetDTO pd = new PredmetDTO();
+        pd.setId(p.getId());
+        pd.setEspb(p.getEspb());
+        pd.setNaziv(p.getNaziv());
+        pd.setSifra(p.getSifra());
+        pd.setObavezan(p.isObavezan());
+        if (p.getStudProgram() != null) {
+            pd.setStudProgramNaziv(p.getStudProgram().getNaziv());
+        }
+        return pd;
+    }
+
+    //Dodajem DTO listu
+    public static List<PredmetDTO> toPredmetDTOList(Iterable<Predmet> predmetIterable) {
+        List<PredmetDTO> dtos = new ArrayList<>();
+        predmetIterable.forEach(predmet -> dtos.add(fromPredmetToDTO(predmet)));
+        return dtos;
+    }
 	
 	public static StudentDTO fromStudentIndeksToDTO(StudentIndeks si) {
 		StudentDTO s = fromStudentPodaciToDTO(si.getStudent());	

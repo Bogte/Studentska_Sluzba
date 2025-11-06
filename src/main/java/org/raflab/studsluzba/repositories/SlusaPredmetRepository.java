@@ -35,8 +35,8 @@ public interface SlusaPredmetRepository extends JpaRepository<SlusaPredmet, Long
     + "where sp.studentIndeks = si "
     + "and p.naziv = :nazivPredmeta)")
 	List<StudentPodaci> getStudentiNaProgramuKojiNeSlusajuPredmet(
-			@Param("oznakaPrograma") String oznakaPrograma,
-			@Param("nazivPredmeta") String nazivPredmeta);
+			String nazivPrograma,
+			String nazivPredmeta);
 
 
 	/*
