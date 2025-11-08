@@ -38,4 +38,29 @@ public class PredmetService {
         p.setStudProgram(sp);
         return predmetRepository.save(p);
     }
+    //Brisi predmet
+    public void deletePredmet(Long id) {
+        predmetRepository.deleteById(id);
+    }
+    //Itzmeni predmet
+    public PredmetDTO updatePredmet(Long id, PredmetDTO predmetDTO) {
+        Predmet p = predmetRepository.findById(id).orElse(null);
+        if (p == null) {
+            return null;
+        }
+
+        p.setNaziv(predmetDTO.getStudProgramNaziv());
+        p.setSifra(predmetDTO.getSifra());
+        p.setEspb(predmetDTO.getEspb());
+        p.setObavezan(predmetDTO.isObavezan());
+        p.setOpis(predmetDTO.getOpis());
+
+        if(predmetDTO.getStudProgramNaziv() != null) {
+            StudijskiProgram sp = studijskiProgramRepository.findByNaziv(predmetDTO.getStudProgramNaziv()).orElse(null);
+            p.setStudProgram(sp);
+        }
+
+        Predmet pred = predmetRepository.save(p);
+        return EntityMappers.fromPredmetToDTO(pred);
+    }
 }

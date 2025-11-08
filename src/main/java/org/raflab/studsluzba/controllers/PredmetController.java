@@ -47,4 +47,23 @@ public class PredmetController {
     public PredmetDTO createPredmet(@RequestBody PredmetDTO predmetDTO) {
         return EntityMappers.fromPredmetToDTO(predmetService.savePredmet(predmetDTO));
     }
+    //Brisi predmet
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletePredmet(@PathVariable Long id) {
+        Predmet p = predmetService.getPredmetById(id);
+        if (p == null){
+            return ResponseEntity.notFound().build();
+        }
+        predmetService.deletePredmet(id);
+        return ResponseEntity.noContent().build();
+    }
+    //Izmeni predmet
+    @PutMapping("/{id}")
+    public ResponseEntity<PredmetDTO> updatePredmet(@PathVariable Long id, @RequestBody PredmetDTO predmetDTO) {
+        PredmetDTO izmenjen = predmetService.updatePredmet(id, predmetDTO);
+        if (izmenjen == null){
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(izmenjen);
+    }
 }
