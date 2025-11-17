@@ -3,6 +3,7 @@ package org.raflab.studsluzba.services;
 import org.raflab.studsluzba.model.Predmet;
 import org.raflab.studsluzba.model.StudijskiProgram;
 import org.raflab.studsluzba.model.dtos.PredmetDTO;
+import org.raflab.studsluzba.repositories.IspitPrijavaRepository;
 import org.raflab.studsluzba.repositories.PredmetRepository;
 import org.raflab.studsluzba.repositories.StudijskiProgramRepository;
 import org.raflab.studsluzba.utils.EntityMappers;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PredmetService {
@@ -18,6 +20,8 @@ public class PredmetService {
     PredmetRepository predmetRepository;
     @Autowired
     StudijskiProgramRepository studijskiProgramRepository;
+    @Autowired
+    IspitPrijavaRepository ispitPrijavaRepository;
 
     public List<Predmet> getPredmetByStudProgram(Long studProgram) {
         return predmetRepository.getPredmetForStudentskiProgram(studProgram);
@@ -32,6 +36,12 @@ public class PredmetService {
     }
     //Cuvaj predmet
     public Predmet savePredmet(PredmetDTO predmetDTO) {
+
+        Optional<Predmet> predmet = predmetRepository.findBySifra(predmetDTO.getSifra());
+        if(predmet.isPresent()) {
+            throw new RuntimeException("Predmet sa sifrom " + predmetDTO.getSifra() + " vec postoji");
+        }
+
         Predmet p = EntityMappers.fromDTOToPredmet(predmetDTO);
         //Radi samo ako je imde studijskog programa definisano kao jedinstveno
         StudijskiProgram sp = studijskiProgramRepository.findByNaziv(predmetDTO.getStudProgramNaziv()).orElse(null);
@@ -62,5 +72,9 @@ public class PredmetService {
 
         Predmet pred = predmetRepository.save(p);
         return EntityMappers.fromPredmetToDTO(pred);
+    }
+    //
+    public Double getProsecnaOcenaZaPredmetIUPeriodu(Long predmetId, int odGodine, int doGodine) {
+        return ispitPrijavaRepository.findProsecnaOcenaZaPredmetIUPeriodu(predmetId, odGodine, doGodine);
     }
 }

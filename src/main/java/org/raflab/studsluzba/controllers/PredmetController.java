@@ -44,8 +44,13 @@ public class PredmetController {
     }
     //Cuvaj predmet
     @PostMapping
-    public PredmetDTO createPredmet(@RequestBody PredmetDTO predmetDTO) {
-        return EntityMappers.fromPredmetToDTO(predmetService.savePredmet(predmetDTO));
+    public ResponseEntity<?> createPredmet(@RequestBody PredmetDTO predmetDTO) {
+        try{
+            Predmet p = predmetService.savePredmet(predmetDTO);
+            return ResponseEntity.ok(EntityMappers.fromPredmetToDTO(p));
+        }catch (RuntimeException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
     //Brisi predmet
     @DeleteMapping("/{id}")
@@ -65,5 +70,14 @@ public class PredmetController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(izmenjen);
+    }
+    //Prosecna ocena u periodu
+    @GetMapping("/{id}/prosecna-ocena")
+    public ResponseEntity<?> getProsecnaOcena(@PathVariable Long id, @RequestParam int odGodine, @RequestParam int doGodine) {
+        Double prosek = predmetService.getProsecnaOcenaZaPredmetIUPeriodu(id, odGodine, doGodine);
+        if (prosek == null) {
+            return ResponseEntity.ok("Nema položenih ispita u tom periodu.");
+        }
+        return ResponseEntity.ok(prosek);
     }
 }

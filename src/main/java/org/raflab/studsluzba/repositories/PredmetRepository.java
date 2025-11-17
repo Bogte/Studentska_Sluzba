@@ -1,6 +1,7 @@
 package org.raflab.studsluzba.repositories;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.raflab.studsluzba.model.Predmet;
 import org.raflab.studsluzba.model.StudijskiProgram;
@@ -21,6 +22,9 @@ public interface PredmetRepository extends CrudRepository<Predmet, Long> {
 	//Vraca sve podatke o svim predmetima
 	@Query("select p from Predmet p")
 	List<Predmet> getAllPredmet();
+	//Trazimo predmet po sifri
+	Optional<Predmet> findBySifra(String sifra);
+
 
 	List<Predmet> getPredmetsByStudProgramAndObavezan(StudijskiProgram studProgram, boolean obavezan);
 

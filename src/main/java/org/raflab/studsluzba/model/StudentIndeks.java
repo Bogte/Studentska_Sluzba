@@ -1,6 +1,7 @@
 package org.raflab.studsluzba.model;
 
 import java.time.LocalDate;
+import java.util.List;
 import javax.persistence.*;
 import lombok.Data;
 
@@ -25,4 +26,12 @@ public class StudentIndeks {
 	private StudijskiProgram studijskiProgram;   // na koji studijski program je upisan
 	private Integer ostvarenoEspb;
 
+	@OneToMany(mappedBy = "studentIndeks", cascade = CascadeType.ALL)
+	private List<IspitPrijava> prijave;
+
+	@OneToMany(mappedBy = "studentIndeks", cascade = CascadeType.ALL)
+	private List<UpisGodine> upisi;
+
+	@OneToMany(mappedBy = "studentIndeks", cascade = CascadeType.ALL)
+	private List<ObnovaGodine> obnove;
 }

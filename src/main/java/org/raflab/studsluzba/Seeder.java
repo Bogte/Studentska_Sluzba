@@ -30,6 +30,17 @@ public class Seeder implements CommandLineRunner {
     private SlusaPredmetRepository slusaPredmetRepository;
     @Autowired
     private GrupaRepository grupaRepository;
+    @Autowired
+    private IspitniRokRepository ispitniRokRepository;
+    @Autowired
+    private IspitRepository ispitRepository;
+    @Autowired
+    private IspitPrijavaRepository ispitPrijavaRepository;
+    @Autowired
+    private UpisGodineRepository upisGodineRepository;
+    @Autowired
+    private ObnovaGodineRepository obnovaGodineRepository;
+
 
     @Override
     public void run(String... args) throws Exception {
@@ -142,6 +153,83 @@ public class Seeder implements CommandLineRunner {
             g.setStudijskiProgram(spList.get(i - 1));
             g.setPredmeti(Collections.singletonList(predmetList.get(i - 1)));
             grupaRepository.save(g);
+        }
+
+        List<IspitniRok> rokovi = new ArrayList<>();
+        for (int i = 1; i <= 3; i++) {
+            IspitniRok ir = new IspitniRok();
+            ir.setNaziv("Rok " + i);
+            ir.setDatumPocetka(LocalDate.of(2024, i, 1));
+            ir.setDatumZavrsetka(LocalDate.of(2024, i, 15));
+            rokovi.add(ispitniRokRepository.save(ir));
+        }
+
+        List<Ispit> ispiti = new ArrayList<>();
+        Random random = new Random();
+
+        for (int i = 1; i <= 10; i++) {
+            Ispit ispit = new Ispit();
+            ispit.setPredmet(predmetList.get(random.nextInt(predmetList.size())));
+            ispit.setNastavnik(nastavnikList.get(random.nextInt(nastavnikList.size())));
+            ispit.setIspitniRok(rokovi.get(random.nextInt(rokovi.size())));
+            ispit.setDatumOdrzavanja(LocalDate.of(2024, random.nextInt(3) + 1, random.nextInt(28) + 1));
+            ispit.setZakljucen(true);
+            ispiti.add(ispitRepository.save(ispit));
+        }
+
+        for (int i = 1; i <= 20; i++) {
+            IspitPrijava prijava = new IspitPrijava();
+            prijava.setStudentIndeks(indeksList.get(random.nextInt(indeksList.size())));
+            prijava.setIspit(ispiti.get(random.nextInt(ispiti.size())));
+            prijava.setDatumPrijave(LocalDate.now().minusDays(random.nextInt(20)));
+
+            boolean priznat = random.nextBoolean();
+            prijava.setPriznat(priznat);
+
+            if (priznat) {
+                prijava.setOcena(random.nextInt(5) + 6);
+                prijava.setPolozen(true);
+            } else {
+                int pp = random.nextInt(40);
+                int isp = random.nextInt(60);
+                int ukupno = pp + isp;
+                prijava.setPredispitniPoeni(pp);
+                prijava.setPoeniSaIspita(isp);
+                prijava.setUkupnoPoena(ukupno);
+
+                int ocena = ukupno < 51 ? 5 : ukupno < 61 ? 6 : ukupno < 71 ? 7 : ukupno < 81 ? 8 : ukupno < 91 ? 9 : 10;
+
+                prijava.setOcena(ocena);
+                prijava.setPolozen(ocena > 5);
+            }
+
+            prijava.setNapomena("Automatski generisano");
+
+            ispitPrijavaRepository.save(prijava);
+        }
+
+        for (int i = 1; i <= 5; i++) {
+            UpisGodine upis = new UpisGodine();
+            upis.setStudentIndeks(indeksList.get(i - 1));
+            upis.setGodinaKojaSeUpisuje(1 + random.nextInt(4));
+            upis.setDatumUpisa(LocalDate.of(2024, 10, random.nextInt(28) + 1));
+            upis.setNapomena("Upisano automatski");
+            upis.setPrenetiPredmeti(Arrays.asList(
+                    predmetList.get(random.nextInt(predmetList.size()))
+            ));
+            upisGodineRepository.save(upis);
+        }
+
+        for (int i = 1; i <= 5; i++) {
+            ObnovaGodine obnova = new ObnovaGodine();
+            obnova.setStudentIndeks(indeksList.get(i - 1));
+            obnova.setGodinaKojaSeObnavlja(1 + random.nextInt(4));
+            obnova.setDatumObnove(LocalDate.of(2024, 9, random.nextInt(28) + 1));
+            obnova.setNapomena("Obnova automatski");
+            obnova.setUpisaniPredmeti(Arrays.asList(
+                    predmetList.get(random.nextInt(predmetList.size()))
+            ));
+            obnovaGodineRepository.save(obnova);
         }
     }
 }
