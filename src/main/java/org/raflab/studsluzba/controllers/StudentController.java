@@ -20,6 +20,7 @@ import org.raflab.studsluzba.repositories.StudentPodaciRepository;
 import org.raflab.studsluzba.repositories.StudijskiProgramRepository;
 import org.raflab.studsluzba.services.StudentIndeksService;
 import org.raflab.studsluzba.services.StudentProfileService;
+import org.raflab.studsluzba.services.StudentService;
 import org.raflab.studsluzba.utils.Converters;
 import org.raflab.studsluzba.utils.EntityMappers;
 import org.raflab.studsluzba.utils.ParseUtils;
@@ -28,14 +29,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin
 @RestController
@@ -60,7 +55,10 @@ public class StudentController {
     @Autowired
     EntityMappers entityMappers;
 
-    @PostMapping(path="/add") 
+    @Autowired
+    private StudentService studentService;
+
+	@PostMapping(path="/add")
    	public Long addNewStudentPodaci(@RequestBody StudentPodaciRequest studentPodaci) {
     	
    	    StudentPodaci sp = studentPodaciRepository.save(Converters.toStudentPodaci(studentPodaci));
@@ -68,13 +66,34 @@ public class StudentController {
    	    return sp.getId();
  	}
 
-
-	@GetMapping(path="/all")
-	public Iterable<StudentPodaciResponse> getAllStudentPodaci() {
-        return studentPodaciRepository.findAll().stream()
-                .map(entityMappers::fromStudentPodaciToResponse)
-                .collect(Collectors.toList());
+	//Create
+	@PostMapping
+	public ResponseEntity<StudentDTO> create(@RequestBody StudentDTO dto) {
+		return ResponseEntity.ok(studentService.create(dto));
 	}
+	//Sci stidneti
+	@GetMapping(path="/all")
+	public List<StudentDTO> getAllStudents() {
+		return studentService.getAllStudents();
+	}
+	//Studnet po ID
+	@GetMapping("/{id}")
+	public ResponseEntity<StudentDTO> getById(@PathVariable Long id) {
+
+		StudentDTO dto = studentService.getById(id);
+
+		if (dto == null)
+			return ResponseEntity.notFound().build();
+
+		return ResponseEntity.ok(dto);
+	}
+	//Brisi studenta po ID
+	@DeleteMapping("/{id}")
+	public ResponseEntity<Void> delete(@PathVariable Long id) {
+		studentService.delete(id);
+		return ResponseEntity.noContent().build();
+	}
+
 
 	@GetMapping(path="/svi")
 	public Page<StudentPodaciResponse> getAllStudentPodaciPaginated(@RequestParam(defaultValue = "0") Integer page, @RequestParam(defaultValue = "10") Integer size) {

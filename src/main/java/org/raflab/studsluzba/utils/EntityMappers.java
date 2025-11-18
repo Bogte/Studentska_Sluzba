@@ -17,13 +17,64 @@ import java.util.List;
 
 @Component
 public class EntityMappers {
-	
+
+    public static StudentDTO toStudnetDTO(StudentPodaci sp, StudentIndeks si) {
+        StudentDTO dto = new StudentDTO();
+
+        dto.setId(sp.getId());
+        dto.setIme(sp.getIme());
+        dto.setPrezime(sp.getPrezime());
+        dto.setSrednjeIme(sp.getSrednjeIme());
+        dto.setJmbg(sp.getJmbg());
+        dto.setEmail(sp.getEmail());
+
+        if (si != null) {
+            dto.setIdIndeks(si.getId());
+            dto.setGodinaUpisa(si.getGodina());
+            dto.setStudProgramOznaka(si.getStudProgramOznaka());
+            dto.setBroj(si.getBroj());
+            dto.setAktivanIndeks(si.isAktivan());
+            dto.setStudijskiProgramId(
+                    si.getStudijskiProgram() != null ? si.getStudijskiProgram().getId() : null
+            );
+        }
+
+        return dto;
+    }
+
+    public static StudentPodaci fromDTOToStudentPodaci(StudentDTO dto) {
+        StudentPodaci sp = new StudentPodaci();
+        sp.setId(dto.getId());
+        sp.setIme(dto.getIme());
+        sp.setPrezime(dto.getPrezime());
+        sp.setSrednjeIme(dto.getSrednjeIme());
+        sp.setJmbg(dto.getJmbg());
+        sp.setEmail(dto.getEmail());
+        return sp;
+    }
+
+    public static StudentIndeks fromDTOToStudentIndeks(StudentDTO dto, StudentPodaci sp, StudijskiProgram program) {
+        StudentIndeks si = new StudentIndeks();
+        si.setId(dto.getIdIndeks());
+        si.setBroj(dto.getBroj());
+        si.setGodina(dto.getGodinaUpisa());
+        si.setStudProgramOznaka(dto.getStudProgramOznaka());
+        si.setAktivan(dto.isAktivanIndeks());
+        si.setStudent(sp);
+        si.setStudijskiProgram(program);
+        return si;
+    }
+
 	public static StudentDTO fromStudentPodaciToDTO(StudentPodaci sp) {
-		StudentDTO s = new StudentDTO();
-		s.setIdStudentPodaci(sp.getId());
-		s.setIme(sp.getIme());
-		s.setPrezime(sp.getPrezime());
-		return s;
+		StudentDTO dto = new StudentDTO();
+		dto.setId(sp.getId());
+        dto.setIme(sp.getIme());
+        dto.setPrezime(sp.getPrezime());
+        dto.setSrednjeIme(sp.getSrednjeIme());
+        dto.setJmbg(sp.getJmbg());
+        dto.setEmail(sp.getEmail());
+
+		return dto;
 	}
 
     //Dodao DTO converter za Predmet

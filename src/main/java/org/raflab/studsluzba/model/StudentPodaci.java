@@ -33,4 +33,7 @@ public class StudentPodaci {
 	 private String mestoStanovanja;
 	 private String adresaStanovanja;   // u toku studija
 
+	@ManyToOne
+	private SrednjaSkola srednjaSkola;
+
 }
