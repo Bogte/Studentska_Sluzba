@@ -2,21 +2,21 @@ package org.raflab.studsluzba.utils;
 
 import org.raflab.studsluzba.controllers.response.StudentIndeksResponse;
 import org.raflab.studsluzba.controllers.response.StudentPodaciResponse;
-import org.raflab.studsluzba.model.Predmet;
-import org.raflab.studsluzba.model.StudentIndeks;
-import org.raflab.studsluzba.model.StudentPodaci;
-import org.raflab.studsluzba.model.StudijskiProgram;
-import org.raflab.studsluzba.model.dtos.PredmetDTO;
-import org.raflab.studsluzba.model.dtos.StudentDTO;
+import org.raflab.studsluzba.model.*;
+import org.raflab.studsluzba.model.dtos.*;
+import org.raflab.studsluzba.repositories.StudentIndeksRepository;
 import org.raflab.studsluzba.repositories.StudijskiProgramRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class EntityMappers {
+
 
     public static StudentDTO toStudnetDTO(StudentPodaci sp, StudentIndeks si) {
         StudentDTO dto = new StudentDTO();
@@ -164,4 +164,54 @@ public class EntityMappers {
 
         return response;
     }
+
+    public static List<UpisGodineDTO> toUpisGodineDTOList(List<UpisGodine> list) {
+        return list.stream().map(EntityMappers::toUpisGodineDTO).collect(Collectors.toList());
+    }
+
+    //Upis to DTO
+    public static UpisGodineDTO toUpisGodineDTO(UpisGodine ug) {
+
+        UpisGodineDTO dto = new UpisGodineDTO();
+
+        dto.setId(ug.getId());
+        dto.setGodinaKojaSeUpisuje(ug.getGodinaKojaSeUpisuje());
+        dto.setDatumUpisa(ug.getDatumUpisa());
+        dto.setNapomena(ug.getNapomena());
+
+        if (ug.getPrenetiPredmeti() != null) {
+            dto.setPrenetiPredmeti(ug.getPrenetiPredmeti().stream().map(Predmet::getNaziv).collect(Collectors.toList()));
+        } else {
+            dto.setPrenetiPredmeti(Collections.emptyList());
+        }
+
+        return dto;
+    }
+
+    //Obnova godine u DTO
+    public static ObnovaGodineDTO toObnovaGodineDTO(ObnovaGodine og) {
+
+        ObnovaGodineDTO dto = new ObnovaGodineDTO();
+        dto.setId(og.getId());
+        dto.setGodinaKojaSeObnavlja(og.getGodinaKojaSeObnavlja());
+        dto.setDatumObnove(og.getDatumObnove());
+        dto.setNapomena(og.getNapomena());
+
+        if (og.getUpisaniPredmeti() != null) {
+            dto.setPredmeti(og.getUpisaniPredmeti().stream().map(Predmet::getNaziv).collect(Collectors.toList()));
+        } else {
+            dto.setPredmeti(Collections.emptyList());
+        }
+
+        return dto;
+    }
+
+    public static List<ObnovaGodineDTO> toObnovaGodineDTOList(List<ObnovaGodine> list) {
+        return list.stream().map(EntityMappers::toObnovaGodineDTO).collect(Collectors.toList());
+    }
+
+    public static UplataDTO toUplataDTO(Uplata u) {
+        return new UplataDTO(u.getId(), u.getDatumUplate(), u.getIznosDin(), u.getSrednjiKurs());
+    }
+
 }

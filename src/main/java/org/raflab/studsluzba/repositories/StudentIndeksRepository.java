@@ -14,7 +14,9 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface StudentIndeksRepository extends JpaRepository<StudentIndeks, Long> {
-	
+
+	Optional<StudentIndeks> findByBrojAndGodina(int broj, int godina);
+
 	
 	@Query("select indeks from StudentIndeks indeks where indeks.studProgramOznaka like ?1 and indeks.godina = ?2 "
 			+ "and indeks.broj = ?3 ")
@@ -41,4 +43,7 @@ public interface StudentIndeksRepository extends JpaRepository<StudentIndeks, Lo
 
 
     Optional<StudentIndeks> findFirstByStudentAndAktivanTrue(StudentPodaci student);
+
+	Optional<StudentIndeks> findByStudentAndAktivanTrue(StudentPodaci student);
+
 }

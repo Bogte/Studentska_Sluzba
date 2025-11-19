@@ -30,4 +30,8 @@ public interface PredmetRepository extends CrudRepository<Predmet, Long> {
 
 	List<Predmet> findByIdIn(List<Long> ids);
 	List<Predmet> findByNazivIn(List<String> nazivi);
+
+	List<Predmet> findByStudProgram(StudijskiProgram studProgram);
+
+	List<Predmet> findAllByIdIn(List<Long> ids);
 }

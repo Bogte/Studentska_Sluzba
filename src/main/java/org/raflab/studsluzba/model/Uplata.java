@@ -19,7 +19,6 @@ public class Uplata {
     private LocalDate datumUplate;
     private double iznosDin;
     private double srednjiKurs;
-    private double iznosEur;
 
     @ManyToOne
     private StudentIndeks studentIndeks;

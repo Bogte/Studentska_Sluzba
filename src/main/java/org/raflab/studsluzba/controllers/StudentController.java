@@ -5,16 +5,13 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import org.raflab.studsluzba.controllers.request.StudentIndeksRequest;
-import org.raflab.studsluzba.controllers.request.StudentPodaciRequest;
+import org.raflab.studsluzba.controllers.request.*;
 import org.raflab.studsluzba.controllers.response.StudentIndeksResponse;
 import org.raflab.studsluzba.controllers.response.StudentPodaciResponse;
 import org.raflab.studsluzba.model.StudentIndeks;
 import org.raflab.studsluzba.model.StudentPodaci;
 import org.raflab.studsluzba.model.StudijskiProgram;
-import org.raflab.studsluzba.model.dtos.StudentDTO;
-import org.raflab.studsluzba.model.dtos.StudentProfileDTO;
-import org.raflab.studsluzba.model.dtos.StudentWebProfileDTO;
+import org.raflab.studsluzba.model.dtos.*;
 import org.raflab.studsluzba.repositories.StudentIndeksRepository;
 import org.raflab.studsluzba.repositories.StudentPodaciRepository;
 import org.raflab.studsluzba.repositories.StudijskiProgramRepository;
@@ -93,6 +90,102 @@ public class StudentController {
 		studentService.delete(id);
 		return ResponseEntity.noContent().build();
 	}
+	//Student podaci po indeksu studenta
+	@GetMapping("/indeks")
+	public ResponseEntity<StudentDTO> getByIndeks(
+			@RequestParam int broj,
+			@RequestParam int godina
+	) {
+		StudentDTO dto = studentService.getByIndex(broj, godina);
+
+		if (dto == null) {
+			return ResponseEntity.notFound().build();
+		}
+
+		return ResponseEntity.ok(dto);
+	}
+	//Polozeni ispiti
+	@GetMapping("/polozeni")
+	public ResponseEntity<Page<IspitPolozenDTO>> getPolozeniIspiti(
+			@RequestParam int broj,
+			@RequestParam int godina,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size
+	) {
+		Page<IspitPolozenDTO> dto = studentService.getPolozeniIspiti(broj, godina, page, size);
+
+		return ResponseEntity.ok(dto);
+	}
+	//Nepolozeni ispiti
+	@GetMapping("/nepolozeni")
+	public ResponseEntity<Page<IspitNepolozeniDTO>> getNepolozeni(
+			@RequestParam int broj,
+			@RequestParam int godina,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size
+	) {
+		Page<IspitNepolozeniDTO> dto = studentService.getNepolozeniIspiti(broj, godina, page, size);
+
+		return ResponseEntity.ok(dto);
+	}
+	//Upisane godine
+	@GetMapping("/upisane-godine")
+	public ResponseEntity<List<UpisGodineDTO>> getUpisaneGodine(@RequestParam int broj, @RequestParam int godina) {
+		List<UpisGodineDTO> result = studentService.getUpisaneGodine(broj, godina);
+
+		return ResponseEntity.ok(result);
+	}
+	//Upisivanje studenata na novu godinu
+	@PostMapping("/upisi-godinu")
+	public ResponseEntity<UpisGodineDTO> upisiGodinu(@RequestBody UpisGodineRequest req) {
+		UpisGodineDTO dto = studentService.upisiGodinu(req);
+		return ResponseEntity.ok(dto);
+	}
+	//Pregled obnovljenih godina za indeks
+	@GetMapping("/obnovljene-godine")
+	public ResponseEntity<List<ObnovaGodineDTO>> getObnovljeneGodine(@RequestParam int broj, @RequestParam int godina) {
+		List<ObnovaGodineDTO> result = studentService.getObnovljeneGodine(broj, godina);
+
+		return ResponseEntity.ok(result);
+	}
+	//Obnova godine sa ESPB
+	@PostMapping("/obnova-godine")
+	public ResponseEntity<ObnovaGodineDTO> obnovaGodine(@RequestBody ObnovaGodineRequest req) {
+		return ResponseEntity.ok(studentService.obnovaGodine(req));
+	}
+	//Uplate
+	@PostMapping("/uplata")
+	public ResponseEntity<UplataDTO> novaUplata(@RequestBody UplataRequest req) {
+		return ResponseEntity.ok(studentService.dodajUplatu(req));
+	}
+	//Preostalo da se uplati
+	@GetMapping("/preostalo-za-uplatu")
+	public ResponseEntity<PreostalaUplataDTO> preostaloZaUplatu(@RequestParam int broj, @RequestParam int godina) {
+		return ResponseEntity.ok(studentService.preostaloZaUplatu(broj, godina));
+	}
+	//Pretraga studenta po imenu illi prezimenu ili oba
+	@GetMapping("/pretraga")
+	public ResponseEntity<Page<StudentDTO>> pretragaStudenata(
+			@RequestParam(required = false) String ime,
+			@RequestParam(required = false) String prezime,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size
+	) {
+		return ResponseEntity.ok(studentService.pretraziStudente(ime, prezime, page, size));
+	}
+	//Pretraga poo srednjoj skoli
+	@GetMapping("/pretraga-srednja-skola-naziv")
+	public ResponseEntity<Page<StudentDTO>> pretragaPoNazivuSkole(
+			@RequestParam String naziv,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size
+	) {
+		return ResponseEntity.ok(studentService.findByNazivSrednjeSkole(naziv, page, size));
+	}
+
+
+
+
 
 
 	@GetMapping(path="/svi")
@@ -173,7 +266,7 @@ public class StudentController {
       }else return null;
     }
     
-    @GetMapping(path="/search")  // pretraga po imenu, prezimenu i elementima indeksa
+    /*@GetMapping(path="/search")  // pretraga po imenu, prezimenu i elementima indeksa
     public Page<StudentDTO> search(@RequestParam (required = false) String ime,
 								   @RequestParam (required = false) String prezime,
 								   @RequestParam (required = false) String studProgram,
@@ -188,7 +281,7 @@ public class StudentController {
     	}
     	Page<StudentIndeks> siList = studentIndeksRepository.findStudentIndeks(ime, prezime, studProgram, godina, broj, PageRequest.of(page, size, Sort.by("id").descending()));
 		return siList.map(EntityMappers::fromStudentIndeksToDTO);
-    }
+    }*/
     
     @GetMapping(path="/profile/{studentIndeksId}")  
     public StudentProfileDTO getStudentProfile(@PathVariable  Long studentIndeksId) {

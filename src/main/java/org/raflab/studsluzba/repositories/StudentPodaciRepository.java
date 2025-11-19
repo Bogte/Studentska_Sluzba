@@ -4,6 +4,7 @@ package org.raflab.studsluzba.repositories;
 
 import java.util.List;
 
+import org.raflab.studsluzba.model.SrednjaSkola;
 import org.raflab.studsluzba.model.StudentIndeks;
 import org.raflab.studsluzba.model.StudentPodaci;
 import org.springframework.data.domain.Page;
@@ -26,5 +27,11 @@ public interface StudentPodaciRepository extends JpaRepository<StudentPodaci, Lo
 	
 	@Query("select si from StudentIndeks si where si.aktivan=false and si.student.id = :studPodaciId")
 	List<StudentIndeks> getNeaktivniIndeksi(Long studPodaciId);
-		
+
+	Page<StudentPodaci> findByImeContainingIgnoreCase(String ime, Pageable pageable);
+	Page<StudentPodaci> findByPrezimeContainingIgnoreCase(String prezime, Pageable pageable);
+	Page<StudentPodaci> findByImeContainingIgnoreCaseAndPrezimeContainingIgnoreCase(String ime, String prezime, Pageable pageable);
+
+	Page<StudentPodaci> findBySrednjaSkola_NazivContainingIgnoreCase(String naziv, Pageable pageable);
+
 }
