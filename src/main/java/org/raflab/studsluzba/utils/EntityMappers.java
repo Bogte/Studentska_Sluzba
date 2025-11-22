@@ -8,9 +8,7 @@ import org.raflab.studsluzba.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -65,6 +63,91 @@ public class EntityMappers {
 
         return ispit;
     }
+
+    //Ispit prijava DTO
+    public static RezultatIspitaDTO fromIspitPrijavaToRezultatDTO(IspitPrijava ip) {
+
+        RezultatIspitaDTO dto = new RezultatIspitaDTO();
+
+        StudentIndeks si = ip.getStudentIndeks();
+        StudentPodaci sp = si.getStudent();
+
+        dto.setIme(sp.getIme());
+        dto.setPrezime(sp.getPrezime());
+
+        dto.setStudProgramOznaka(si.getStudProgramOznaka());
+        dto.setGodinaUpisa(si.getGodina());
+        dto.setBroj(si.getBroj());
+
+        int predispitni = Optional.ofNullable(ip.getPredispitniPoeni()).orElse(0);
+        int saIspita = Optional.ofNullable(ip.getPoeniSaIspita()).orElse(0);
+
+        dto.setPredispitniPoeni(predispitni);
+        dto.setPoeniSaIspita(saIspita);
+        dto.setUkupnoPoena(predispitni + saIspita);
+
+        dto.setPolozen(ip.isPolozen());
+
+        return dto;
+    }
+
+    //Lista za ispit prijava DTO
+    public static List<RezultatIspitaDTO> toRezultatIspitaDTOList(List<IspitPrijava> prijave) {
+
+        return prijave.stream()
+                .map(EntityMappers::fromIspitPrijavaToRezultatDTO)
+                .sorted(Comparator
+                        .comparing(RezultatIspitaDTO::getStudProgramOznaka)
+                        .thenComparing(RezultatIspitaDTO::getGodinaUpisa)
+                        .thenComparing(RezultatIspitaDTO::getBroj)
+                )
+                .collect(Collectors.toList());
+    }
+
+    //Predispitni poeni DTO
+    public static PredispitniPoeniDTO toPredispitniPoeniDTO(IspitPrijava ip) {
+        PredispitniPoeniDTO dto = new PredispitniPoeniDTO();
+
+        dto.setPredmet(ip.getIspit().getPredmet().getNaziv());
+        dto.setPredispitniPoeni(
+                Optional.ofNullable(ip.getPredispitniPoeni()).orElse(0)
+        );
+
+        dto.setIndeksId(ip.getStudentIndeks().getId());
+        dto.setBrojIndeksa(ip.getStudentIndeks().getBroj());
+        dto.setGodinaUpisa(ip.getStudentIndeks().getGodina());
+        dto.setStudijskiProgram(ip.getStudentIndeks().getStudProgramOznaka());
+        dto.setDatum(ip.getIspit().getDatumOdrzavanja());
+
+        return dto;
+    }
+
+    //Ispit prijava u DTO
+    public static PrijavljeniStudentDTO fromIspitPrijavaToDTO(IspitPrijava ip) {
+
+        PrijavljeniStudentDTO dto = new PrijavljeniStudentDTO();
+
+        dto.setPrijavaId(ip.getId());
+
+        StudentIndeks indeks = ip.getStudentIndeks();
+        StudentPodaci sp = indeks.getStudent();
+
+        dto.setStudentId(sp.getId());
+        dto.setIme(sp.getIme());
+        dto.setPrezime(sp.getPrezime());
+
+        dto.setIndeksId(indeks.getId());
+        dto.setBroj(indeks.getBroj());
+        dto.setGodinaUpisa(indeks.getGodina());
+        dto.setStudProgramOznaka(indeks.getStudProgramOznaka());
+
+        if(ip.getUkupnoPoena() == null) dto.setOsvojeniPoeni(0);
+        else dto.setOsvojeniPoeni(ip.getUkupnoPoena());
+        dto.setOcena(ip.getOcena());
+
+        return dto;
+    }
+
 
 
     public static StudentDTO toStudnetDTO(StudentPodaci sp, StudentIndeks si) {

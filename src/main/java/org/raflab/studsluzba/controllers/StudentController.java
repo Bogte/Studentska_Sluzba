@@ -182,9 +182,17 @@ public class StudentController {
 	) {
 		return ResponseEntity.ok(studentService.findByNazivSrednjeSkole(naziv, page, size));
 	}
-
-
-
+	//Selekciaj predispitnih poena
+	@GetMapping("/predispitni-poeni")
+	public ResponseEntity<List<PredispitniPoeniDTO>> getPredispitni(
+			@RequestParam Long indeksId,
+			@RequestParam Long predmetId,
+			@RequestParam Long skolskaGodinaId
+	) {
+		return ResponseEntity.ok(
+				studentService.selektujPredispitnePoene(indeksId, predmetId, skolskaGodinaId)
+		);
+	}
 
 
 

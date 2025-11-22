@@ -3,15 +3,18 @@ package org.raflab.studsluzba.services;
 import lombok.Data;
 import org.hibernate.sql.Update;
 import org.raflab.studsluzba.model.Ispit;
+import org.raflab.studsluzba.model.IspitPrijava;
+import org.raflab.studsluzba.model.StudentIndeks;
 import org.raflab.studsluzba.model.dtos.IspitDTO;
-import org.raflab.studsluzba.repositories.IspitRepository;
-import org.raflab.studsluzba.repositories.IspitniRokRepository;
-import org.raflab.studsluzba.repositories.NastavnikRepository;
-import org.raflab.studsluzba.repositories.PredmetRepository;
+import org.raflab.studsluzba.model.dtos.PrijavljeniStudentDTO;
+import org.raflab.studsluzba.repositories.*;
 import org.raflab.studsluzba.utils.EntityMappers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -30,6 +33,15 @@ public class IspitService {
 
     @Autowired
     private IspitniRokRepository ispitniRokRepository;
+
+    @Autowired
+    private IspitPrijavaRepository ispitPrijavaRepository;
+
+    @Autowired
+    private StudentIndeksRepository studentIndeksRepository;
+
+    @Autowired
+    private SlusaPredmetRepository slusaPredmetRepository;
 
     //Svi ispiti
     public List<IspitDTO> getAll() {
@@ -76,5 +88,30 @@ public class IspitService {
             return false;
         ispitRepository.deleteById(id);
         return true;
+    }
+
+    //Prijavljeni studentit za ispit
+    @Transactional
+    public List<PrijavljeniStudentDTO> getPrijavljeniStudenti(Long ispitId) {
+
+        Ispit ispit = ispitRepository.findById(ispitId).orElse(null);
+        if (ispit == null)
+            return Collections.emptyList();
+
+        List<IspitPrijava> prijave = ispit.getPrijave();
+        prijave.size();
+
+        return prijave.stream().map(EntityMappers::fromIspitPrijavaToDTO).collect(Collectors.toList());
+    }
+
+    //Prosecna ocena na ispitu
+    public Double getProsecnaOcena(Long ispitId) {
+        Double avg = ispitPrijavaRepository.findProsecnaOcenaZaIspit(ispitId);
+        return avg == null ? 0.0 : avg;
+    }
+
+    //Koliko je puta polagao
+    public Long brojPolaganjaPredmeta(Long indeksId, Long predmetId) {
+        return ispitPrijavaRepository.countPolaganja(indeksId, predmetId);
     }
 }

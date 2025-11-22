@@ -395,4 +395,14 @@ public class StudentService {
         });
     }
 
+    //Selekciaja predispotnih poena
+    public List<PredispitniPoeniDTO> selektujPredispitnePoene(
+            Long indeksId, Long predmetId, Long skolskaGodinaId) {
+
+        List<IspitPrijava> lista =
+                ispitPrijavaRepository.findPredispitniPoeni(indeksId, predmetId, skolskaGodinaId);
+
+        return lista.stream().map(EntityMappers::toPredispitniPoeniDTO).collect(Collectors.toList());
+    }
+
 }
