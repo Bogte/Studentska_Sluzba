@@ -4,8 +4,7 @@ import org.raflab.studsluzba.controllers.response.StudentIndeksResponse;
 import org.raflab.studsluzba.controllers.response.StudentPodaciResponse;
 import org.raflab.studsluzba.model.*;
 import org.raflab.studsluzba.model.dtos.*;
-import org.raflab.studsluzba.repositories.StudentIndeksRepository;
-import org.raflab.studsluzba.repositories.StudijskiProgramRepository;
+import org.raflab.studsluzba.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +15,56 @@ import java.util.stream.Collectors;
 
 @Component
 public class EntityMappers {
+
+    //Ispit DTO
+    public static IspitDTO fromIspitToDTO(Ispit ispit) {
+        IspitDTO dto = new IspitDTO();
+        dto.setId(ispit.getId());
+        dto.setDatumOdrzavanja(ispit.getDatumOdrzavanja());
+        dto.setVremePocetka(ispit.getVremePocetka());
+        dto.setZakljucen(ispit.isZakljucen());
+
+        if (ispit.getPredmet() != null) {
+            dto.setPredmetId(ispit.getPredmet().getId());
+            dto.setPredmetNaziv(ispit.getPredmet().getNaziv());
+        }
+
+        if (ispit.getNastavnik() != null) {
+            dto.setNastavnikId(ispit.getNastavnik().getId());
+            dto.setNastavnikImePrezime(
+                    ispit.getNastavnik().getIme() + " " + ispit.getNastavnik().getPrezime()
+            );
+        }
+
+        if (ispit.getIspitniRok() != null) {
+            dto.setIspitniRokId(ispit.getIspitniRok().getId());
+            dto.setIspitniRokNaziv(ispit.getIspitniRok().getNaziv());
+        }
+
+        return dto;
+    }
+
+    //DTO ispit
+    public static Ispit fromDTOToIspit(IspitDTO dto, PredmetRepository predmetRepo, NastavnikRepository nastavnikRepo, IspitniRokRepository ispitniRokRepo) {
+
+        Ispit ispit = new Ispit();
+
+        ispit.setId(dto.getId());
+        ispit.setDatumOdrzavanja(dto.getDatumOdrzavanja());
+        ispit.setVremePocetka(dto.getVremePocetka());
+        ispit.setZakljucen(dto.isZakljucen());
+
+        if (dto.getPredmetId() != null)
+            ispit.setPredmet(predmetRepo.findById(dto.getPredmetId()).orElse(null));
+
+        if (dto.getNastavnikId() != null)
+            ispit.setNastavnik(nastavnikRepo.findById(dto.getNastavnikId()).orElse(null));
+
+        if (dto.getIspitniRokId() != null)
+            ispit.setIspitniRok(ispitniRokRepo.findById(dto.getIspitniRokId()).orElse(null));
+
+        return ispit;
+    }
 
 
     public static StudentDTO toStudnetDTO(StudentPodaci sp, StudentIndeks si) {
