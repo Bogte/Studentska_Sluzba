@@ -4,18 +4,150 @@ import org.raflab.studsluzba.controllers.response.StudentIndeksResponse;
 import org.raflab.studsluzba.controllers.response.StudentPodaciResponse;
 import org.raflab.studsluzba.model.*;
 import org.raflab.studsluzba.model.dtos.*;
-import org.raflab.studsluzba.repositories.StudentIndeksRepository;
-import org.raflab.studsluzba.repositories.StudijskiProgramRepository;
+import org.raflab.studsluzba.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
 public class EntityMappers {
+
+    //Ispit DTO
+    public static IspitDTO fromIspitToDTO(Ispit ispit) {
+        IspitDTO dto = new IspitDTO();
+        dto.setId(ispit.getId());
+        dto.setDatumOdrzavanja(ispit.getDatumOdrzavanja());
+        dto.setVremePocetka(ispit.getVremePocetka());
+        dto.setZakljucen(ispit.isZakljucen());
+
+        if (ispit.getPredmet() != null) {
+            dto.setPredmetId(ispit.getPredmet().getId());
+            dto.setPredmetNaziv(ispit.getPredmet().getNaziv());
+        }
+
+        if (ispit.getNastavnik() != null) {
+            dto.setNastavnikId(ispit.getNastavnik().getId());
+            dto.setNastavnikImePrezime(
+                    ispit.getNastavnik().getIme() + " " + ispit.getNastavnik().getPrezime()
+            );
+        }
+
+        if (ispit.getIspitniRok() != null) {
+            dto.setIspitniRokId(ispit.getIspitniRok().getId());
+            dto.setIspitniRokNaziv(ispit.getIspitniRok().getNaziv());
+        }
+
+        return dto;
+    }
+
+    //DTO ispit
+    public static Ispit fromDTOToIspit(IspitDTO dto, PredmetRepository predmetRepo, NastavnikRepository nastavnikRepo, IspitniRokRepository ispitniRokRepo) {
+
+        Ispit ispit = new Ispit();
+
+        ispit.setId(dto.getId());
+        ispit.setDatumOdrzavanja(dto.getDatumOdrzavanja());
+        ispit.setVremePocetka(dto.getVremePocetka());
+        ispit.setZakljucen(dto.isZakljucen());
+
+        if (dto.getPredmetId() != null)
+            ispit.setPredmet(predmetRepo.findById(dto.getPredmetId()).orElse(null));
+
+        if (dto.getNastavnikId() != null)
+            ispit.setNastavnik(nastavnikRepo.findById(dto.getNastavnikId()).orElse(null));
+
+        if (dto.getIspitniRokId() != null)
+            ispit.setIspitniRok(ispitniRokRepo.findById(dto.getIspitniRokId()).orElse(null));
+
+        return ispit;
+    }
+
+    //Ispit prijava DTO
+    public static RezultatIspitaDTO fromIspitPrijavaToRezultatDTO(IspitPrijava ip) {
+
+        RezultatIspitaDTO dto = new RezultatIspitaDTO();
+
+        StudentIndeks si = ip.getStudentIndeks();
+        StudentPodaci sp = si.getStudent();
+
+        dto.setIme(sp.getIme());
+        dto.setPrezime(sp.getPrezime());
+
+        dto.setStudProgramOznaka(si.getStudProgramOznaka());
+        dto.setGodinaUpisa(si.getGodina());
+        dto.setBroj(si.getBroj());
+
+        int predispitni = Optional.ofNullable(ip.getPredispitniPoeni()).orElse(0);
+        int saIspita = Optional.ofNullable(ip.getPoeniSaIspita()).orElse(0);
+
+        dto.setPredispitniPoeni(predispitni);
+        dto.setPoeniSaIspita(saIspita);
+        dto.setUkupnoPoena(predispitni + saIspita);
+
+        dto.setPolozen(ip.isPolozen());
+
+        return dto;
+    }
+
+    //Lista za ispit prijava DTO
+    public static List<RezultatIspitaDTO> toRezultatIspitaDTOList(List<IspitPrijava> prijave) {
+
+        return prijave.stream()
+                .map(EntityMappers::fromIspitPrijavaToRezultatDTO)
+                .sorted(Comparator
+                        .comparing(RezultatIspitaDTO::getStudProgramOznaka)
+                        .thenComparing(RezultatIspitaDTO::getGodinaUpisa)
+                        .thenComparing(RezultatIspitaDTO::getBroj)
+                )
+                .collect(Collectors.toList());
+    }
+
+    //Predispitni poeni DTO
+    public static PredispitniPoeniDTO toPredispitniPoeniDTO(IspitPrijava ip) {
+        PredispitniPoeniDTO dto = new PredispitniPoeniDTO();
+
+        dto.setPredmet(ip.getIspit().getPredmet().getNaziv());
+        dto.setPredispitniPoeni(
+                Optional.ofNullable(ip.getPredispitniPoeni()).orElse(0)
+        );
+
+        dto.setIndeksId(ip.getStudentIndeks().getId());
+        dto.setBrojIndeksa(ip.getStudentIndeks().getBroj());
+        dto.setGodinaUpisa(ip.getStudentIndeks().getGodina());
+        dto.setStudijskiProgram(ip.getStudentIndeks().getStudProgramOznaka());
+        dto.setDatum(ip.getIspit().getDatumOdrzavanja());
+
+        return dto;
+    }
+
+    //Ispit prijava u DTO
+    public static PrijavljeniStudentDTO fromIspitPrijavaToDTO(IspitPrijava ip) {
+
+        PrijavljeniStudentDTO dto = new PrijavljeniStudentDTO();
+
+        dto.setPrijavaId(ip.getId());
+
+        StudentIndeks indeks = ip.getStudentIndeks();
+        StudentPodaci sp = indeks.getStudent();
+
+        dto.setStudentId(sp.getId());
+        dto.setIme(sp.getIme());
+        dto.setPrezime(sp.getPrezime());
+
+        dto.setIndeksId(indeks.getId());
+        dto.setBroj(indeks.getBroj());
+        dto.setGodinaUpisa(indeks.getGodina());
+        dto.setStudProgramOznaka(indeks.getStudProgramOznaka());
+
+        if(ip.getUkupnoPoena() == null) dto.setOsvojeniPoeni(0);
+        else dto.setOsvojeniPoeni(ip.getUkupnoPoena());
+        dto.setOcena(ip.getOcena());
+
+        return dto;
+    }
+
 
 
     public static StudentDTO toStudnetDTO(StudentPodaci sp, StudentIndeks si) {

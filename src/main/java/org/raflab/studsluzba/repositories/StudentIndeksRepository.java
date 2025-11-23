@@ -46,4 +46,6 @@ public interface StudentIndeksRepository extends JpaRepository<StudentIndeks, Lo
 
 	Optional<StudentIndeks> findByStudentAndAktivanTrue(StudentPodaci student);
 
+	Optional<StudentIndeks> findByStudentIdAndAktivanTrue(Long studentId);
+
 }

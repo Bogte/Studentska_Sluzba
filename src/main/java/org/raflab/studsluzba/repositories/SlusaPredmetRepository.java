@@ -2,6 +2,7 @@ package org.raflab.studsluzba.repositories;
 
 import java.util.List;
 
+import org.raflab.studsluzba.model.Predmet;
 import org.raflab.studsluzba.model.SlusaPredmet;
 import org.raflab.studsluzba.model.StudentIndeks;
 import org.raflab.studsluzba.model.StudentPodaci;
@@ -45,6 +46,9 @@ public interface SlusaPredmetRepository extends JpaRepository<SlusaPredmet, Long
 	@Query("select si from StudentIndeks si where not exists "
 			+ "(select sp from SlusaPredmet sp where sp.studentIndeks=si and sp.drziPredmet.id = :idDrziPredmet) ")
 	List<StudentIndeks> getStudentiNeSlusajuDrziPredmet(Long idDrziPredmet);
-	
 
+	//Student slusa predmet?
+	boolean existsByStudentIndeksAndDrziPredmet_Predmet_Id(StudentIndeks indeks, Long predmetId);
+
+	SlusaPredmet findByStudentIndeksAndDrziPredmet_Predmet(StudentIndeks studentIndeks, Predmet drziPredmetPredmet);
 }
