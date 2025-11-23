@@ -12,38 +12,41 @@ import java.util.*;
 @Component
 public class Seeder implements CommandLineRunner {
 
-    @Autowired
-    private StudijskiProgramRepository studijskiProgramRepository;
-    @Autowired
-    private PredmetRepository predmetRepository;
-    @Autowired
-    private NastavnikRepository nastavnikRepository;
-    @Autowired
-    private NastavnikZvanjeRepository nastavnikZvanjeRepository;
-    @Autowired
-    private StudentPodaciRepository studentPodaciRepository;
-    @Autowired
-    private StudentIndeksRepository studentIndeksRepository;
-    @Autowired
-    private DrziPredmetRepository drziPredmetRepository;
-    @Autowired
-    private SlusaPredmetRepository slusaPredmetRepository;
-    @Autowired
-    private GrupaRepository grupaRepository;
-    @Autowired
-    private IspitniRokRepository ispitniRokRepository;
-    @Autowired
-    private IspitRepository ispitRepository;
-    @Autowired
-    private IspitPrijavaRepository ispitPrijavaRepository;
-    @Autowired
-    private UpisGodineRepository upisGodineRepository;
-    @Autowired
-    private ObnovaGodineRepository obnovaGodineRepository;
-
+    @Autowired private StudijskiProgramRepository studijskiProgramRepository;
+    @Autowired private PredmetRepository predmetRepository;
+    @Autowired private NastavnikRepository nastavnikRepository;
+    @Autowired private NastavnikZvanjeRepository nastavnikZvanjeRepository;
+    @Autowired private StudentPodaciRepository studentPodaciRepository;
+    @Autowired private StudentIndeksRepository studentIndeksRepository;
+    @Autowired private DrziPredmetRepository drziPredmetRepository;
+    @Autowired private SlusaPredmetRepository slusaPredmetRepository;
+    @Autowired private GrupaRepository grupaRepository;
+    @Autowired private IspitniRokRepository ispitniRokRepository;
+    @Autowired private IspitRepository ispitRepository;
+    @Autowired private IspitPrijavaRepository ispitPrijavaRepository;
+    @Autowired private UpisGodineRepository upisGodineRepository;
+    @Autowired private ObnovaGodineRepository obnovaGodineRepository;
+    @Autowired private SkolskaGodinaRepository skolskaGodinaRepository;
+    @Autowired private SrednjaSkolaRepository srednjaSkolaRepository;
+    @Autowired private PolozenPredmetRepository polozenPredmetRepository;
+    @Autowired private UplataRepository uplataRepository;
 
     @Override
     public void run(String... args) throws Exception {
+
+        Random random = new Random();
+
+        // -------------------------
+        // 1. SKOLSKE GODINE
+        // -------------------------
+        List<SkolskaGodina> godine = new ArrayList<>();
+        for (int i = 2020; i <= 2024; i++) {
+            SkolskaGodina sg = new SkolskaGodina();
+            sg.setOznaka(i + "/" + (i + 1));
+            sg.setAktivna(i == 2024);
+            godine.add(skolskaGodinaRepository.save(sg));
+        }
+
         List<StudijskiProgram> spList = new ArrayList<>();
         for (int i = 1; i <= 5; i++) {
             StudijskiProgram sp = new StudijskiProgram();
@@ -59,13 +62,13 @@ public class Seeder implements CommandLineRunner {
         }
 
         List<Predmet> predmetList = new ArrayList<>();
-        for (int i = 1; i <= 5; i++) {
+        for (int i = 1; i <= 10; i++) {
             Predmet p = new Predmet();
             p.setSifra("PR" + i);
             p.setNaziv("Predmet " + i);
             p.setOpis("Opis predmeta " + i);
-            p.setEspb(6 + i);
-            p.setStudProgram(spList.get((i - 1) % spList.size()));
+            p.setEspb(6);
+            p.setStudProgram(spList.get(random.nextInt(spList.size())));
             p.setObavezan(i % 2 == 0);
             predmetList.add(predmetRepository.save(p));
         }
@@ -85,16 +88,24 @@ public class Seeder implements CommandLineRunner {
             nastavnikList.add(nastavnikRepository.save(n));
         }
 
-        List<NastavnikZvanje> zvanjeList = new ArrayList<>();
-        for (int i = 1; i <= 5; i++) {
+        for (int i = 0; i < 5; i++) {
             NastavnikZvanje nz = new NastavnikZvanje();
-            nz.setDatumIzbora(LocalDate.of(2020 + i, i, i));
-            nz.setNaucnaOblast("Oblast " + i);
-            nz.setUzaNaucnaOblast("Uza oblast " + i);
-            nz.setZvanje("Zvanje " + i);
-            nz.setAktivno(i % 2 == 0);
-            nz.setNastavnik(nastavnikList.get(i - 1));
-            zvanjeList.add(nastavnikZvanjeRepository.save(nz));
+            nz.setDatumIzbora(LocalDate.of(2020 + i, i + 1, 1));
+            nz.setNaucnaOblast("Oblast " + (i + 1));
+            nz.setUzaNaucnaOblast("Uza oblast " + (i + 1));
+            nz.setZvanje("Docent");
+            nz.setAktivno(true);
+            nz.setNastavnik(nastavnikList.get(i));
+            nastavnikZvanjeRepository.save(nz);
+        }
+
+        List<SrednjaSkola> skole = new ArrayList<>();
+        for (int i = 1; i <= 5; i++) {
+            SrednjaSkola ss = new SrednjaSkola();
+            ss.setNaziv("Srednja Škola " + i);
+            ss.setMesto("Grad " + i);
+            ss.setVrsta(i % 2 == 0 ? "Gimnazija" : "Tehnička");
+            skole.add(srednjaSkolaRepository.save(ss));
         }
 
         List<StudentPodaci> studentPodaciList = new ArrayList<>();
@@ -114,6 +125,7 @@ public class Seeder implements CommandLineRunner {
             s.setAdresa("Adresa " + i);
             s.setBrojTelefonaMobilni("06123456" + i);
             s.setEmail("student" + i + "@example.com");
+            s.setSrednjaSkola(skole.get(i - 1));
             studentPodaciList.add(studentPodaciRepository.save(s));
         }
 
@@ -133,25 +145,28 @@ public class Seeder implements CommandLineRunner {
         }
 
         List<DrziPredmet> drziPredmetList = new ArrayList<>();
-        for (int i = 1; i <= 5; i++) {
+        for (int i = 0; i < predmetList.size(); i++) {
             DrziPredmet dp = new DrziPredmet();
-            dp.setNastavnik(nastavnikList.get(i - 1));
-            dp.setPredmet(predmetList.get(i - 1));
+            dp.setPredmet(predmetList.get(i));
+            dp.setNastavnik(nastavnikList.get(i % nastavnikList.size()));
             drziPredmetList.add(drziPredmetRepository.save(dp));
         }
 
-        List<SlusaPredmet> slusaPredmetList = new ArrayList<>();
-        for (int i = 1; i <= 5; i++) {
-            SlusaPredmet sl = new SlusaPredmet();
-            sl.setStudentIndeks(indeksList.get(i - 1));
-            sl.setDrziPredmet(drziPredmetList.get(i - 1));
-            slusaPredmetList.add(slusaPredmetRepository.save(sl));
+        for (StudentIndeks si : indeksList) {
+            for (DrziPredmet dp : drziPredmetList) {
+                if (random.nextBoolean()) {
+                    SlusaPredmet sl = new SlusaPredmet();
+                    sl.setStudentIndeks(si);
+                    sl.setDrziPredmet(dp);
+                    slusaPredmetRepository.save(sl);
+                }
+            }
         }
 
-        for (int i = 1; i <= 5; i++) {
+        for (StudijskiProgram sp : spList) {
             Grupa g = new Grupa();
-            g.setStudijskiProgram(spList.get(i - 1));
-            g.setPredmeti(Collections.singletonList(predmetList.get(i - 1)));
+            g.setStudijskiProgram(sp);
+            g.setPredmeti(predmetList.subList(0, 3));
             grupaRepository.save(g);
         }
 
@@ -161,12 +176,11 @@ public class Seeder implements CommandLineRunner {
             ir.setNaziv("Rok " + i);
             ir.setDatumPocetka(LocalDate.of(2024, i, 1));
             ir.setDatumZavrsetka(LocalDate.of(2024, i, 15));
+            ir.setSkolskaGodina(godine.get(4));
             rokovi.add(ispitniRokRepository.save(ir));
         }
 
         List<Ispit> ispiti = new ArrayList<>();
-        Random random = new Random();
-
         for (int i = 1; i <= 10; i++) {
             Ispit ispit = new Ispit();
             ispit.setPredmet(predmetList.get(random.nextInt(predmetList.size())));
@@ -197,39 +211,58 @@ public class Seeder implements CommandLineRunner {
                 prijava.setPoeniSaIspita(isp);
                 prijava.setUkupnoPoena(ukupno);
 
-                int ocena = ukupno < 51 ? 5 : ukupno < 61 ? 6 : ukupno < 71 ? 7 : ukupno < 81 ? 8 : ukupno < 91 ? 9 : 10;
+                int ocena = ukupno < 51 ? 5 :
+                        ukupno < 61 ? 6 :
+                                ukupno < 71 ? 7 :
+                                        ukupno < 81 ? 8 :
+                                                ukupno < 91 ? 9 : 10;
 
                 prijava.setOcena(ocena);
                 prijava.setPolozen(ocena > 5);
             }
 
             prijava.setNapomena("Automatski generisano");
-
             ispitPrijavaRepository.save(prijava);
         }
 
-        for (int i = 1; i <= 5; i++) {
+        for (StudentIndeks si : indeksList) {
             UpisGodine upis = new UpisGodine();
-            upis.setStudentIndeks(indeksList.get(i - 1));
+            upis.setStudentIndeks(si);
             upis.setGodinaKojaSeUpisuje(1 + random.nextInt(4));
             upis.setDatumUpisa(LocalDate.of(2024, 10, random.nextInt(28) + 1));
             upis.setNapomena("Upisano automatski");
-            upis.setPrenetiPredmeti(Arrays.asList(
-                    predmetList.get(random.nextInt(predmetList.size()))
-            ));
+            upis.setPrenetiPredmeti(Collections.singletonList(predmetList.get(random.nextInt(predmetList.size()))));
             upisGodineRepository.save(upis);
         }
 
-        for (int i = 1; i <= 5; i++) {
+        for (StudentIndeks si : indeksList) {
             ObnovaGodine obnova = new ObnovaGodine();
-            obnova.setStudentIndeks(indeksList.get(i - 1));
+            obnova.setStudentIndeks(si);
             obnova.setGodinaKojaSeObnavlja(1 + random.nextInt(4));
             obnova.setDatumObnove(LocalDate.of(2024, 9, random.nextInt(28) + 1));
             obnova.setNapomena("Obnova automatski");
-            obnova.setUpisaniPredmeti(Arrays.asList(
-                    predmetList.get(random.nextInt(predmetList.size()))
-            ));
+            obnova.setUpisaniPredmeti(Collections.singletonList(predmetList.get(random.nextInt(predmetList.size()))));
             obnovaGodineRepository.save(obnova);
+        }
+
+        for (StudentIndeks si : indeksList) {
+            PolozenPredmet pp = new PolozenPredmet();
+            pp.setStudentIndeks(si);
+            pp.setPredmet(predmetList.get(random.nextInt(predmetList.size())));
+            pp.setDatumPolaganja(LocalDate.of(2024, random.nextInt(6) + 1, random.nextInt(28) + 1));
+            pp.setUkupnoPoena(85);
+            pp.setOcena(9);
+            pp.setNapomena("Položeno automatski");
+            polozenPredmetRepository.save(pp);
+        }
+
+        for (StudentIndeks si : indeksList) {
+            Uplata u = new Uplata();
+            u.setStudentIndeks(si);
+            u.setDatumUplate(LocalDate.now().minusDays(random.nextInt(30)));
+            u.setIznosDin(5000 + random.nextInt(20000));
+            u.setSrednjiKurs(117.2);
+            uplataRepository.save(u);
         }
     }
 }
