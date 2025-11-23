@@ -136,38 +136,30 @@ public class StudentService {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("ispit.datumOdrzavanja").descending());
 
-        Page<IspitPrijava> prijave = ispitPrijavaRepository.findByStudentIndeksAndPolozenTrue(indeks, pageable);
+        Page<IspitPrijava> prijave =
+                ispitPrijavaRepository.findByStudentIndeksAndPolozenTrue(indeks, pageable);
 
-        return prijave.map(ip -> {
-            IspitPolozenDTO dto = new IspitPolozenDTO();
-            dto.setPredmet(ip.getIspit().getPredmet().getNaziv());
-            dto.setOcena(ip.getOcena());
-            dto.setDatum(ip.getIspit().getDatumOdrzavanja());
-            return dto;
-        });
+        return prijave.map(EntityMappers::fromIspitPrijavaToPolozenDTO);
     }
 
     //Nepolozeni ispiti
     public Page<IspitNepolozeniDTO> getNepolozeniIspiti(int broj, int godina, int page, int size) {
+
         StudentIndeks indeks = indeksRepo.findByBrojAndGodina(broj, godina).orElse(null);
 
         if (indeks == null) {
             return Page.empty();
         }
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("ispit.datumOdrzavanja").descending()
-        );
+        Pageable pageable = PageRequest.of(page, size,
+                Sort.by("ispit.datumOdrzavanja").descending());
 
-        Page<IspitPrijava> prijave = ispitPrijavaRepository.findByStudentIndeksAndPolozenFalse(indeks, pageable);
+        Page<IspitPrijava> prijave =
+                ispitPrijavaRepository.findByStudentIndeksAndPolozenFalse(indeks, pageable);
 
-        return prijave.map(ip -> {
-            IspitNepolozeniDTO dto = new IspitNepolozeniDTO();
-            dto.setPredmet(ip.getIspit().getPredmet().getNaziv());
-            dto.setDatum(ip.getIspit().getDatumOdrzavanja());
-            dto.setUkupanBrojPoena(ip.getUkupnoPoena()); // może null ako nije izasao
-            return dto;
-        });
+        return prijave.map(EntityMappers::fromIspitPrijavaToNepolozenDTO);
     }
+
 
     //Upisane godine
     public List<UpisGodineDTO> getUpisaneGodine(int broj, int godina) {
@@ -338,15 +330,12 @@ public class StudentService {
 
         Page<StudentPodaci> result;
 
-        //Ime
         if (ime != null && !ime.isBlank() && (prezime == null || prezime.isBlank())) {
             result = studentPodaciRepository.findByImeContainingIgnoreCase(ime, pageable);
         }
-        //Prezime
         else if (prezime != null && !prezime.isBlank() && (ime == null || ime.isBlank())) {
             result = studentPodaciRepository.findByPrezimeContainingIgnoreCase(prezime, pageable);
         }
-        //Oba
         else if (ime != null && !ime.isBlank() && prezime != null && !prezime.isBlank()) {
             result = studentPodaciRepository
                     .findByImeContainingIgnoreCaseAndPrezimeContainingIgnoreCase(ime, prezime, pageable);
@@ -356,20 +345,14 @@ public class StudentService {
         }
 
         return result.map(sp -> {
-            StudentDTO dto = EntityMappers.fromStudentPodaciToDTO(sp);
+            StudentIndeks aktivan = studentIndeksRepository
+                    .findByStudentAndAktivanTrue(sp)
+                    .orElse(null);
 
-            studentIndeksRepository.findByStudentAndAktivanTrue(sp).ifPresent(ind -> {
-                dto.setIdIndeks(ind.getId());
-                dto.setBroj(ind.getBroj());
-                dto.setGodinaUpisa(ind.getGodina());
-                dto.setStudProgramOznaka(ind.getStudProgramOznaka());
-                dto.setAktivanIndeks(ind.isAktivan());
-                dto.setStudijskiProgramId(ind.getStudijskiProgram().getId());
-            });
-
-            return dto;
+            return EntityMappers.fromStudentPodaciAndIndeks(sp, aktivan);
         });
     }
+
 
     //Pretraga po zavrsenoj srednjoj skoli
     public Page<StudentDTO> findByNazivSrednjeSkole(String naziv, int page, int size) {
@@ -380,20 +363,14 @@ public class StudentService {
                 studentPodaciRepository.findBySrednjaSkola_NazivContainingIgnoreCase(naziv, pageable);
 
         return result.map(sp -> {
-            StudentDTO dto = EntityMappers.fromStudentPodaciToDTO(sp);
+            StudentIndeks aktivan = studentIndeksRepository
+                    .findByStudentAndAktivanTrue(sp)
+                    .orElse(null);
 
-            studentIndeksRepository.findByStudentAndAktivanTrue(sp).ifPresent(ind -> {
-                dto.setIdIndeks(ind.getId());
-                dto.setBroj(ind.getBroj());
-                dto.setGodinaUpisa(ind.getGodina());
-                dto.setStudProgramOznaka(ind.getStudProgramOznaka());
-                dto.setAktivanIndeks(ind.isAktivan());
-                dto.setStudijskiProgramId(ind.getStudijskiProgram().getId());
-            });
-
-            return dto;
+            return EntityMappers.fromStudentPodaciAndIndeks(sp, aktivan);
         });
     }
+
 
     //Selekciaja predispotnih poena
     public List<PredispitniPoeniDTO> selektujPredispitnePoene(

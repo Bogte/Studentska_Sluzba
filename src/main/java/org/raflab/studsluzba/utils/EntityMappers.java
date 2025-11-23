@@ -42,6 +42,45 @@ public class EntityMappers {
         return dto;
     }
 
+    //Polozeni ispiti DTO
+    public static IspitPolozenDTO fromIspitPrijavaToPolozenDTO(IspitPrijava ip) {
+        if (ip == null || ip.getIspit() == null) return null;
+
+        IspitPolozenDTO dto = new IspitPolozenDTO();
+        dto.setPredmet(ip.getIspit().getPredmet().getNaziv());
+        dto.setOcena(ip.getOcena());
+        dto.setDatum(ip.getIspit().getDatumOdrzavanja());
+        return dto;
+    }
+
+    //Nepolozeni ispiti
+    public static IspitNepolozeniDTO fromIspitPrijavaToNepolozenDTO(IspitPrijava ip) {
+        if (ip == null || ip.getIspit() == null) return null;
+
+        IspitNepolozeniDTO dto = new IspitNepolozeniDTO();
+        dto.setPredmet(ip.getIspit().getPredmet().getNaziv());
+        dto.setDatum(ip.getIspit().getDatumOdrzavanja());
+        dto.setUkupanBrojPoena(ip.getUkupnoPoena());
+        return dto;
+    }
+
+    //Pretraga ime/prezime
+    public static StudentDTO fromStudentPodaciAndIndeks(StudentPodaci sp, StudentIndeks indeks) {
+        StudentDTO dto = fromStudentPodaciToDTO(sp);
+
+        if (indeks != null) {
+            dto.setIdIndeks(indeks.getId());
+            dto.setBroj(indeks.getBroj());
+            dto.setGodinaUpisa(indeks.getGodina());
+            dto.setStudProgramOznaka(indeks.getStudProgramOznaka());
+            dto.setAktivanIndeks(indeks.isAktivan());
+            dto.setStudijskiProgramId(indeks.getStudijskiProgram().getId());
+        }
+
+        return dto;
+    }
+
+
     //DTO ispit
     public static Ispit fromDTOToIspit(IspitDTO dto, PredmetRepository predmetRepo, NastavnikRepository nastavnikRepo, IspitniRokRepository ispitniRokRepo) {
 
