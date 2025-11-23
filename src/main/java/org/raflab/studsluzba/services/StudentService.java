@@ -291,7 +291,7 @@ public class StudentService {
     public PreostalaUplataDTO preostaloZaUplatu(int broj, int godina) {
 
         StudentIndeks indeks = indeksRepo.findByBrojAndGodina(broj, godina)
-                .orElseThrow(() -> new RuntimeException("Indeks nije pronađen"));
+                .orElseThrow(() -> new RuntimeException("Indeks nije pronadjen"));
 
         List<Uplata> uplate = uplataRepository.findByStudentIndeks(indeks);
 

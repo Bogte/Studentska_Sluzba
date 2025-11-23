@@ -41,13 +41,13 @@ public class IspitPrijavaService {
         StudentIndeks indeks = studentIndeksRepository.findByStudentIdAndAktivanTrue(indeksId).orElse(null);
 
         if (ispit == null || indeks == null)
-            return "Nepostojeći ispit ili indeks.";
+            return "Nepostojeci ispit ili indeks.";
 
         Long predmetId = ispit.getPredmet().getId();
 
         boolean slusa = slusaPredmetRepository.existsByStudentIndeksAndDrziPredmet_Predmet_Id(indeks, predmetId);
 
-        if (!slusa) return "Student NE SLUŠA ovaj predmet — ne može da prijavi ispit.";
+        if (!slusa) return "Student ne slusa ovaj predmet ne može da prijavi ispit.";
 
         boolean vecPrijavio = ispitPrijavaRepository.existsByStudentIndeksAndIspit(indeks, ispit);
 
@@ -70,7 +70,7 @@ public class IspitPrijavaService {
 
         ispitPrijavaRepository.save(prijava);
 
-        return "Uspešno prijavljen ispit!";
+        return "Uspesno prijavljen ispit!";
     }
 
     //Izlazak na ispit i minimalno 51 poena
